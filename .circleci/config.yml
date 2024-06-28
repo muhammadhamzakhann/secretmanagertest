@@ -81,7 +81,7 @@ workflows:
   deployment:
     jobs:
       - deploy:
-          context: plops-booking-dev
+          context: secret-manager-test
           filters:
             branches:
               only:
