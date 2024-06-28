@@ -65,53 +65,18 @@ jobs:
       - run:
           name: Push and Deploy
           command: |
-            # Define variables
             service_name=$AWS_LIGHTSAIL_SERVICENAME
             export AWS_ACCESS_KEY_ID=$AWS_ACCESS
             export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
-            # Push container image
+
             aws lightsail push-container-image \
-                --service-name ${service_name} \
-                --label ${service_name} \
-                --image ${service_name}:release
-
-            # Get the image name and save it to image.txt
+              --service-name ${service_name} \
+              --label ${service_name} \
+              --image ${service_name}:release
             aws lightsail get-container-images --service-name ${service_name} | jq --raw-output ".containerImages[0].image" > image.txt
-
-            # Check if image.txt was created successfully
-            if [ ! -s image.txt ]; then
-                echo "Failed to retrieve container image."
-                exit 1
-            fi
-
-            # Ensure the docker-lightsail-template.json file exists
-            template_file="docker-lightsail-template.json"
-            if [ ! -f ${template_file} ]; then
-                echo "Template file ${template_file} not found."
-                exit 1
-            fi
-
-            # Update the template with the new image
-            jq --arg image $(cat image.txt) '.containers.app.image = $image' ${template_file} > container.json
-
-            # Output the container.json for verification
-            cat container.json
-
-            # Deploy the container service
+            jq --arg image $(cat image.txt) '.containers.app.image = $image' ./docker-lightsail-template.json > container.json
+            echo $(cat container.json)
             aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json
-
-            # service_name=$AWS_LIGHTSAIL_SERVICENAME
-            # export AWS_ACCESS_KEY_ID=$AWS_ACCESS
-            # export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
-
-            # aws lightsail push-container-image \
-            #   --service-name ${service_name} \
-            #   --label ${service_name} \
-            #   --image ${service_name}:release
-            # aws lightsail get-container-images --service-name ${service_name} | jq --raw-output ".containerImages[0].image" > image.txt
-            # jq --arg image $(cat image.txt) '.containers.app.image = $image' docker-lightsail-template.json > container.json
-            # echo $(cat container.json)
-            # aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json
 
 workflows:
   deployment:
