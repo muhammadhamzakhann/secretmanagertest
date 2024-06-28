@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import { getSecretValue } from './fetchSecrets';
 
-function App() {
+const App: React.FC = () => {
+  const [apiKey, setApiKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSecrets = async () => {
+      try {
+        const secrets = await getSecretValue('secretmaangertest');
+        setApiKey(secrets.REACT_APP_API_KEY);
+      } catch (error) {
+        console.error('Error fetching secrets', error);
+      }
+    };
+    fetchSecrets();
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <p>API Key: {apiKey}</p>
       </header>
     </div>
   );
-}
+};
 
 export default App;

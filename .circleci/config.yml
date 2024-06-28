@@ -1,0 +1,88 @@
+version: 2.1
+jobs:
+
+  deploy:
+    docker:
+      - image: cimg/node:18.17.0
+
+    steps:
+      - checkout
+
+      - setup_remote_docker:
+          version: docker24
+          docker_layer_caching: true
+
+      - restore_cache:
+          keys:
+              - v1-dependencies-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Install Dependencies
+          command: yarn install
+
+      - save_cache:
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+
+      - run:
+          name: Make maintenance steps
+          command: |
+            yarn generate-gitinfo
+            yarn generate-buildtime
+
+      - run:
+          name: Install AWS CLI and Lightsail Ctl
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install || true
+            aws --version
+            curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "lightsailctl"
+            sudo mv "lightsailctl" "/usr/local/bin/lightsailctl"
+            sudo chmod +x /usr/local/bin/lightsailctl
+
+      - run:
+          name: Configure AWS credentials
+          command: |
+            echo "aws_access_key_id: $AWS_ACCESS"
+            echo "aws_secret_access_key: $AWS_SECRET"
+            echo "region: eu-central-1"
+
+            aws configure set default.region eu-central-1
+
+      - run:
+          name: Install jq and unzip
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y jq unzip
+
+      - run:
+            name: Build Docker Image
+            command: docker build -f Dockerfile -t $AWS_LIGHTSAIL_SERVICENAME:release .
+
+      - run:
+          name: Push and Deploy
+          command: |
+            service_name=$AWS_LIGHTSAIL_SERVICENAME
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
+
+            aws lightsail push-container-image \
+              --service-name ${service_name} \
+              --label ${service_name} \
+              --image ${service_name}:release
+            aws lightsail get-container-images --service-name ${service_name} | jq --raw-output ".containerImages[0].image" > image.txt
+            jq --arg image $(cat image.txt) '.containers.app.image = $image' docker-lightsail-template.json > container.json
+            echo $(cat container.json)
+            aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json
+
+workflows:
+  deployment:
+    jobs:
+      - deploy:
+          context: plops-booking-dev
+          filters:
+            branches:
+              only:
+                - main
