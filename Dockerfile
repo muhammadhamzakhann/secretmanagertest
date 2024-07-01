@@ -1,26 +1,22 @@
-# Use an official node image as a parent image
-FROM node:14-alpine
+# Stage 1: Build the React app
+FROM node:16 AS build
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
-
-# Install dependencies
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy the rest of the application code
-COPY . .
-
-# Build the application
+COPY . ./
 RUN npm run build
 
-# Install serve to serve the build
-RUN npm install -g serve
+# Stage 2: Serve the React app
+FROM nginx:alpine
 
-# Expose the port the app runs on
-EXPOSE 5000
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Command to run the application
-CMD ["serve", "-s", "build"]
+# Copy custom nginx configuration if needed
+# COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
