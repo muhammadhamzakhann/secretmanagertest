@@ -57,7 +57,10 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y jq unzip
-
+      - run:
+          name: Copy .env file to workspace
+          command: cp .env /home/circleci/project/.env
+          
       - run:
             name: Build Docker Image
             command: docker build -f Dockerfile -t $AWS_LIGHTSAIL_SERVICENAME:release .
