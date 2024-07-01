@@ -1,9 +1,6 @@
 import React from 'react';
 import './App.css';
 import SecretComponent from './SecretComponent';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const App: React.FC = () => {
   return (
