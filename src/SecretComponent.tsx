@@ -1,47 +1,42 @@
 import React, { useEffect, useState } from 'react';
+import AWS from 'aws-sdk';
+
+// Configure AWS SDK with your credentials
+AWS.config.update({
+    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+    region: 'your-region', // Replace with your AWS region
+});
+
+const secretsManager = new AWS.SecretsManager();
 
 const SecretComponent: React.FC = () => {
-  const [secret, setSecret] = useState<Record<string, string> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+    const [secretValue, setSecretValue] = useState<string>('');
 
-  useEffect(() => {
-    const fetchSecret = async () => {
-      try {
-        const response = await fetch('https://73afw5og0k.execute-api.eu-central-1.amazonaws.com/default/secrets');
-        if (!response.ok) {
-          throw new Error('Failed to fetch secret');
-        }
-        const data = await response.json();
-        const secretJson = JSON.parse(data.secret);
-        setSecret(secretJson);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unknown error occurred');
-        }
-      }
-    };
+    useEffect(() => {
+        const fetchSecret = async () => {
+            try {
+                const data = await secretsManager.getSecretValue({ SecretId: 'secretmaangertest' }).promise();
+                if (data.SecretString) {
+                    setSecretValue(JSON.parse(data.SecretString));
+                } else {
+                    throw new Error('SecretString not found');
+                }
+            } catch (err) {
+                console.error('Error retrieving secret:', err);
+                // Handle error as needed
+            }
+        };
 
-    fetchSecret();
-  }, []);
+        fetchSecret();
+    }, []);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  return (
-    <div>
-      {secret ? (
+    return (
         <div>
-          <div>Key1: {secret.API_SECRET}</div>
-          <div>Key2: {secret.API_ACCESS}</div>
+            <h1>Secret Value</h1>
+            <p>{secretValue}</p>
         </div>
-      ) : (
-        <div>Loading...</div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default SecretComponent;
