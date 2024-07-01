@@ -13,9 +13,6 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Copy the .env file
-COPY .env .env
-
 # Build the application
 RUN npm run build
 
@@ -25,5 +22,13 @@ RUN npm install -g serve
 # Expose the port the app runs on
 EXPOSE 5000
 
+# Accept build arguments and set them as environment variables
+ARG REACT_APP_AWS_ACCESS_KEY_ID
+ARG REACT_APP_AWS_SECRET_ACCESS_KEY
+ARG REACT_APP_AWS_REGION
+ENV REACT_APP_AWS_ACCESS_KEY_ID=$REACT_APP_AWS_ACCESS_KEY_ID
+ENV REACT_APP_AWS_SECRET_ACCESS_KEY=$REACT_APP_AWS_SECRET_ACCESS_KEY
+ENV REACT_APP_AWS_REGION=$REACT_APP_AWS_REGION
+
 # Command to run the application
-CMD ["sh", "-c", "npx dotenv -e .env serve -s build"]
+CMD ["serve", "-s", "build"]

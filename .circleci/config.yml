@@ -57,13 +57,19 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y jq unzip
+
       - run:
-          name: Copy .env file to workspace
-          command: cp .env /home/circleci/project/.env
-          
-      - run:
-            name: Build Docker Image
-            command: docker build -f Dockerfile -t $AWS_LIGHTSAIL_SERVICENAME:release .
+          name: Build Docker Image
+          command: >
+            docker build
+            -f Dockerfile
+            -t $AWS_LIGHTSAIL_SERVICENAME:release
+            --build-arg REACT_APP_AWS_ACCESS_KEY_ID=$REACT_APP_AWS_ACCESS_KEY_ID
+            --build-arg REACT_APP_AWS_SECRET_ACCESS_KEY=$REACT_APP_AWS_SECRET_ACCESS_KEY
+            --build-arg REACT_APP_AWS_REGION=$REACT_APP_AWS_REGION
+            .
+                      
+
 
       - run:
           name: Push and Deploy
