@@ -11,7 +11,7 @@ const client = new SecretsManagerClient({
 });
 
 const SecretComponent: React.FC = () => {
-  const [secret, setSecret] = useState<string | null>(null);
+  const [secret, setSecret] = useState<Record<string, string> | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -24,7 +24,10 @@ const SecretComponent: React.FC = () => {
             VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
           })
         );
-        setSecret(response.SecretString || null);
+        if (response.SecretString) {
+          const secretJson = JSON.parse(response.SecretString);
+          setSecret(secretJson);
+        }
       } catch (err) {
         setError(err as Error);
       }
@@ -39,7 +42,16 @@ const SecretComponent: React.FC = () => {
 
   return (
     <div>
-      {secret ? <div>Secret: {secret}</div> : <div>Loading...</div>}
+      {secret ? (
+        <div>
+          {/* Access specific values from the secret JSON object */}
+          <div>Key1: {secret.API_SECRET}</div>
+          <div>Key2: {secret.API_KEY}</div>
+          {/* Add more keys as needed */}
+        </div>
+      ) : (
+        <div>Loading...</div>
+      )}
     </div>
   );
 };
