@@ -1,34 +1,26 @@
-# Use an official node image as a parent image
-FROM node:14-alpine
+# Base image
+FROM node:18.17.0
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Copy package.json and yarn.lock
+COPY package.json yarn.lock ./
 
 # Install dependencies
-RUN npm install
+RUN yarn install
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
-# Install serve to serve the build
-RUN npm install -g serve
+# Install AWS SDK (if not already installed by your package.json)
+RUN yarn add aws-sdk
 
-# Expose the port the app runs on
-EXPOSE 5000
+# Expose port
+EXPOSE 3000
 
-# Accept build arguments and set them as environment variables
-ARG REACT_APP_AWS_ACCESS_KEY_ID
-ARG REACT_APP_AWS_SECRET_ACCESS_KEY
-ARG REACT_APP_AWS_REGION
-ENV REACT_APP_AWS_ACCESS_KEY_ID=$REACT_APP_AWS_ACCESS_KEY_ID
-ENV REACT_APP_AWS_SECRET_ACCESS_KEY=$REACT_APP_AWS_SECRET_ACCESS_KEY
-ENV REACT_APP_AWS_REGION=$REACT_APP_AWS_REGION
-
-# Command to run the application
-CMD ["serve", "-s", "build"]
+# Start the application
+CMD ["yarn", "start"]

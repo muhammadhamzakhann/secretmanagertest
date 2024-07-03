@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import AWS from 'aws-sdk';
 
-// Configure AWS SDK with your credentials
-AWS.config.update({
-    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-    region: process.env.REACT_APP_AWS_REGION, // Replace with your AWS region
-});
+// Configure AWS SDK
+AWS.config.update({ region: 'eu-central-1' });
 
 const secretsManager = new AWS.SecretsManager();
 
 const SecretComponent: React.FC = () => {
     const [secretValue, setSecretValue] = useState<string>('');
+    const [error, setError] = useState<string>('');
 
     useEffect(() => {
         const fetchSecret = async () => {
@@ -22,9 +19,23 @@ const SecretComponent: React.FC = () => {
                 } else {
                     throw new Error('SecretString not found');
                 }
+                console.log(data);
             } catch (err) {
-                console.error('Error retrieving secret:', err);
-                // Handle error as needed
+                let errorMessage = 'Error retrieving secret: ';
+
+                // Check if the error is an AWS SDK error
+                if (err instanceof Error && (err as AWS.AWSError).code) {
+                    const awsError = err as AWS.AWSError;
+                    errorMessage += `AWS Error Code: ${awsError.code}, Message: ${awsError.message}`;
+                } else if (err instanceof Error) {
+                    errorMessage += err.message;
+                }
+
+                // Log the full error object for debugging purposes
+                console.error('Error object:', err);
+                console.error(errorMessage);
+
+                setError(errorMessage);
             }
         };
 
@@ -34,7 +45,7 @@ const SecretComponent: React.FC = () => {
     return (
         <div>
             <h1>Secret Value</h1>
-            <p>{secretValue}</p>
+            {secretValue ? <p>{secretValue}</p> : <p>{error}</p>}
         </div>
     );
 };
