@@ -49,6 +49,9 @@ jobs:
           name: Push and Deploy
           command: |
             service_name=$AWS_LIGHTSAIL_SERVICENAME
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
+
             aws lightsail push-container-image \
               --service-name ${service_name} \
               --label ${service_name} \
