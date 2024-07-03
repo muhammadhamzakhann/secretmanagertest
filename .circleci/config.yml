@@ -28,12 +28,11 @@ jobs:
       - run:
           name: Configure AWS credentials
           command: |
-            echo "[default]" > ~/.aws/credentials
-            echo "aws_access_key_id = $AWS_ACCESS" >> ~/.aws/credentials
-            echo "aws_secret_access_key = $AWS_SECRET" >> ~/.aws/credentials
+            echo "aws_access_key_id: $AWS_ACCESS"
+            echo "aws_secret_access_key: $AWS_SECRET"
+            echo "region: eu-central-1"
 
-            echo "[default]" > ~/.aws/config
-            echo "region = eu-central-1" >> ~/.aws/config
+            aws configure set default.region eu-central-1
 
       - run:
           name: Install jq and unzip
