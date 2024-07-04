@@ -49,9 +49,6 @@ jobs:
           name: Push and Deploy
           command: |
             service_name=$AWS_LIGHTSAIL_SERVICENAME
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
-
             aws lightsail push-container-image \
               --service-name ${service_name} \
               --label ${service_name} \
@@ -59,7 +56,8 @@ jobs:
             aws lightsail get-container-images --service-name ${service_name} | jq --raw-output ".containerImages[0].image" > image.txt
             jq --arg image $(cat image.txt) '.containers.app.image = $image' docker-lightsail-template.json > container.json
             echo $(cat container.json)
-            aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json
+            aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json \
+              --environment-variables AWS_ACCESS_KEY_ID=$AWS_ACCESS AWS_SECRET_ACCESS_KEY=$AWS_SECRET AWS_REGION=eu-central-1
 
 workflows:
   deployment:
