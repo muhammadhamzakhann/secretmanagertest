@@ -45,45 +45,18 @@ jobs:
           name: Build Docker Image
           command: docker build -f Dockerfile -t $AWS_LIGHTSAIL_SERVICENAME:release .
 
-      # - run:
-      #     name: Push and Deploy
-      #     command: |
-      #       service_name=$AWS_LIGHTSAIL_SERVICENAME
-      #       aws lightsail push-container-image \
-      #         --service-name ${service_name} \
-      #         --label ${service_name} \
-      #         --image ${service_name}:release
-      #       aws lightsail get-container-images --service-name ${service_name} | jq --raw-output ".containerImages[0].image" > image.txt
-      #       jq --arg image $(cat image.txt) '.containers.app.image = $image' docker-lightsail-template.json > container.json
-      #       echo $(cat container.json)
-      #       aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json
-
-      # - run:
-      #     name: Set Environment Variables
-      #     command: |
-      #       aws lightsail create-container-service-deployment --service-name ${service_name} \
-      #         --containers "app={image=${service_name}:release,environment={AWS_ACCESS_KEY_ID=$AWS_ACCESS,AWS_SECRET_ACCESS_KEY=$AWS_SECRET,AWS_REGION=eu-central-1}}"
       - run:
-          name: Push and Deploy with Environment Variables
+          name: Push and Deploy
           command: |
             service_name=$AWS_LIGHTSAIL_SERVICENAME
-
-            # Push the container image to Lightsail
             aws lightsail push-container-image \
               --service-name ${service_name} \
               --label ${service_name} \
               --image ${service_name}:release
-
-            # Retrieve the image URI and update container.json
             aws lightsail get-container-images --service-name ${service_name} | jq --raw-output ".containerImages[0].image" > image.txt
             jq --arg image $(cat image.txt) '.containers.app.image = $image' docker-lightsail-template.json > container.json
             echo $(cat container.json)
-
-            # Create the container service deployment with environment variables
-            aws lightsail create-container-service-deployment \
-              --service-name ${service_name} \
-              --cli-input-json file://$(pwd)/container.json \
-              --containers "app={image=${service_name}:release,environment={AWS_ACCESS_KEY_ID=$AWS_ACCESS,AWS_SECRET_ACCESS_KEY=$AWS_SECRET,AWS_REGION=eu-central-1}}"
+            aws lightsail create-container-service-deployment --service-name ${service_name} --cli-input-json file://$(pwd)/container.json
 
 workflows:
   deployment:
