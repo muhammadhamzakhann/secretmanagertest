@@ -1,10 +1,10 @@
-# Base image
-FROM node:18.17.0
+# Use an official Node.js runtime as a parent image
+FROM node:18-alpine AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and yarn.lock
+# Copy the package.json and yarn.lock files
 COPY package.json yarn.lock ./
 
 # Install dependencies
@@ -13,14 +13,20 @@ RUN yarn install
 # Copy the rest of the application code
 COPY . .
 
-# Build the application
+# Build the React app for production
 RUN yarn build
 
-# Install AWS SDK (if not already installed by your package.json)
-RUN yarn add aws-sdk
+# Use an official nginx image to serve the built app
+FROM nginx:stable-alpine
 
-# Expose port
-EXPOSE 3000
+# Copy the built app from the previous stage
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Start the application
-CMD ["yarn", "start"]
+# Copy the nginx configuration file
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

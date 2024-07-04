@@ -43,8 +43,7 @@ jobs:
 
       - run:
           name: Build Docker Image
-          command: >
-            docker build -f Dockerfile -t $AWS_LIGHTSAIL_SERVICENAME:release .
+          command: docker build -f Dockerfile -t $AWS_LIGHTSAIL_SERVICENAME:release .
 
       - run:
           name: Push and Deploy
