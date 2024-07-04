@@ -19,6 +19,8 @@ RUN npm run build
 # Install serve to serve the build
 RUN npm install -g serve
 
+ENV AWS_SDK_LOAD_CONFIG=1
+
 # Expose the port the app runs on
 EXPOSE 3000
 
