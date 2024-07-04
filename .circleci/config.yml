@@ -25,15 +25,23 @@ jobs:
             sudo mv "lightsailctl" "/usr/local/bin/lightsailctl"
             sudo chmod +x /usr/local/bin/lightsailctl
 
+      # - run:
+      #     name: Configure AWS credentials
+      #     command: |
+      #       mkdir -p ~/.aws
+      #       echo "[default]" > ~/.aws/credentials
+      #       echo "aws_access_key_id = $AWS_ACCESS" >> ~/.aws/credentials
+      #       echo "aws_secret_access_key = $AWS_SECRET" >> ~/.aws/credentials
+      #       echo "[default]" > ~/.aws/config
+      #       echo "region = eu-central-1" >> ~/.aws/config
       - run:
           name: Configure AWS credentials
           command: |
-            mkdir -p ~/.aws
-            echo "[default]" > ~/.aws/credentials
-            echo "aws_access_key_id = $AWS_ACCESS" >> ~/.aws/credentials
-            echo "aws_secret_access_key = $AWS_SECRET" >> ~/.aws/credentials
-            echo "[default]" > ~/.aws/config
-            echo "region = eu-central-1" >> ~/.aws/config
+            echo "aws_access_key_id: $AWS_ACCESS"
+            echo "aws_secret_access_key: $AWS_SECRET"
+            echo "region: eu-central-1"
+
+            aws configure set default.region eu-central-1
 
       - run:
           name: Install jq and unzip
