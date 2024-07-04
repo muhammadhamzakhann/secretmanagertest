@@ -4,19 +4,16 @@
             "image": "",
             "environment": {
                 "APP_ENV": "release",
-                "NODE_ENV": "production",
-                "AWS_ACCESS_KEY_ID": "$AWS_ACCESS",
-                "AWS_SECRET_ACCESS_KEY": "$AWS_SECRET",
-                "AWS_REGION": "eu-central-1"
+                "NODE_ENV": "production"
             },
             "ports": {
-                "80": "5000"
+                "3000": "HTTP"
             }
         }
     },
     "publicEndpoint": {
         "containerName": "app",
-        "containerPort": 80,
+        "containerPort": 3000,
         "healthCheck": {
             "healthyThreshold": 2,
             "unhealthyThreshold": 2,
