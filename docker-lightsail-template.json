@@ -10,13 +10,13 @@
                 "AWS_REGION": "eu-central-1"
             },
             "ports": {
-                "3000": "HTTP"
+                "80": "5000"
             }
         }
     },
     "publicEndpoint": {
         "containerName": "app",
-        "containerPort": 3000,
+        "containerPort": 80,
         "healthCheck": {
             "healthyThreshold": 2,
             "unhealthyThreshold": 2,
