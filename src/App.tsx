@@ -1,16 +1,14 @@
 import React from 'react';
 import './App.css';
-import SecretComponent from './SecretComponent';
 
 const App: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Welcome to Secrets Manager Demo</h1>
-        <SecretComponent />
+        <h1>Hello, World!</h1>
       </header>
     </div>
   );
-};
+}
 
 export default App;
